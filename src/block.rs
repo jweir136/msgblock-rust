@@ -9,7 +9,6 @@ pub trait BlockTrait {
 }
 
 pub struct MsgBlock {
-    id: usize,
     msg: String,
     seal: Seal
 }
@@ -20,10 +19,21 @@ impl BlockTrait for MsgBlock {
     }
 
     fn hash(&self) -> Hash {
-        hashing::sha256_hash(format!("{}{}", self.id, self.msg).as_bytes())
+        hashing::sha256_hash(format!("{}", self.msg).as_bytes())
     }
 
     fn as_json(&self) -> &str {
         ""
+    }
+}
+
+impl MsgBlock {
+    pub fn new(msg: String, pubkey: &signing::RSAKeyPair) -> Self {
+        let seal = signing::sign_data(pubkey, hashing::sha256_hash(&msg.as_bytes()).as_ref());
+
+        MsgBlock {
+            msg: msg,
+            seal: seal
+        }
     }
 }
