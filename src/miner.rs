@@ -1,5 +1,5 @@
 use crate::types::{ Hash, Seal, Request, ServerError };
-use crate::block::{ MsgBlock };
+use crate::block::{ MsgBlock, BlockTrait };
 use std::thread;
 use std::net::{ TcpListener, TcpStream };
 use std::io::{ Write, Read };
@@ -28,7 +28,7 @@ impl Miner {
         let mut buff: [u8; 1] = [0; 1];
 
         match stream.read_exact(&mut buff) {
-            Ok(size) => {
+            Ok(_) => {
                 match buff[0] {
                     1 => { Ok(Request::MinerAdd) },
                     2 => { Ok(Request::AdminAdd) },
@@ -39,6 +39,26 @@ impl Miner {
             Err(_) => {
                 Err(ServerError::CannotRead)
             }
+        }
+    }
+
+    pub fn get_block(&mut self, stream: &mut TcpStream) -> Result<MsgBlock, ServerError> {
+        let mut json = String::new();
+
+        match stream.read_to_string(&mut json) {
+            Ok(_) => {
+                Ok(MsgBlock::from_json(&json[..]))
+            },
+            Err(_) => {
+                Err(ServerError::CannotRead)
+            }
+        }
+    }
+
+    pub fn send_block(&mut self, stream: &mut TcpStream, json: String) -> Result<(), ServerError> {
+        match stream.write_all(json.as_bytes()) {
+            Ok(_) => { Ok(()) },
+            Err(_) => { Err(ServerError::CannotWrite) }
         }
     }
 }
