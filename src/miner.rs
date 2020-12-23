@@ -4,6 +4,8 @@ use std::thread;
 use std::net::{ TcpListener, TcpStream };
 use std::io::{ Write, Read };
 
+const KEY: [u8; 32] = [23, 34, 196, 56, 20, 175, 183, 23, 182, 74, 63, 222, 13, 52, 101, 156, 47, 185, 61, 149, 129, 114, 184, 208, 45, 147, 195, 47, 213, 66, 119, 56];
+
 pub struct Miner {
     server: TcpListener,
     addr: String,
@@ -60,6 +62,34 @@ impl Miner {
             Ok(_) => { Ok(()) },
             Err(_) => { Err(ServerError::CannotWrite) }
         }
+    }
+
+    pub fn add_block(&mut self, stream: &mut TcpStream, block: MsgBlock) -> Result<(), ServerError> {
+        if block.is_valid(&KEY[..]) {
+            for peer in &self.peers {
+                match TcpStream::connect(peer) {
+                    Ok(mut substream) => {
+                        match self.send_block(&mut substream, block.as_json()) {
+                            Ok(_) => {
+                                return Ok(());
+                            },
+                            Err(_) => {
+                                return Err(ServerError::CannotWrite);
+                            }
+                        }
+                    },
+                    Err(_) => {
+                        return Err(ServerError::CannotConnect);
+                    }
+                }
+            }
+
+            self.blocks.push(block);
+
+            return Ok(());
+        }
+
+        Err(ServerError::InvalidBlock)
     }
 }
 

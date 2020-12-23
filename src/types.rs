@@ -11,5 +11,7 @@ pub enum Request {
 pub enum ServerError {
     InvalidRequest,
     CannotRead,
-    CannotWrite
+    CannotWrite,
+    InvalidBlock,
+    CannotConnect
 }
