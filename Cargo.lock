@@ -3,7 +3,7 @@
 [[package]]
 name = "block_cryptography_rust"
 version = "0.1.0"
-source = "git+https://github.com/jweir136/block_cryptography_rust.git#c4fd19e7789bfc58c4c33abe6a213892ab6ffadd"
+source = "git+https://github.com/jweir136/block_cryptography_rust.git#67a6d1cc5139762e0dfa8ec5ad2e9063e9934ba6"
 dependencies = [
  "ring",
 ]

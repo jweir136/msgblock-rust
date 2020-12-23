@@ -16,7 +16,7 @@ pub struct MsgBlock {
 
 impl BlockTrait for MsgBlock {
     fn is_valid(&self, pubkey: &PublicKey) -> bool {
-        signing::verify_data(&pubkey[..], self.hash().as_ref(), &self.seal)
+        signing::verify_data(pubkey.as_ref(), self.hash().as_ref(), &self.seal.as_ref())
     }
 
     fn hash(&self) -> Hash {
