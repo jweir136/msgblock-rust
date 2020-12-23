@@ -1,9 +1,10 @@
-use crate::types::{PublicKey, Hash, Seal};
+use crate::types::{Hash, Seal};
 use block_cryptography_rust::{ hashing, signing };
 use std::fmt::{ Debug, Result, Formatter };
+use ring::signature::KeyPair;
 
 pub trait BlockTrait {
-    fn is_valid(&self, pubkey: &PublicKey) -> bool;
+    fn is_valid(&self, pubkey: &[u8]) -> bool;
     fn hash(&self) -> Hash;
     fn as_json(&self) -> String;
     //fn from_json(json: String) -> Self;
@@ -15,7 +16,7 @@ pub struct MsgBlock {
 }
 
 impl BlockTrait for MsgBlock {
-    fn is_valid(&self, pubkey: &PublicKey) -> bool {
+    fn is_valid(&self, pubkey: &[u8]) -> bool {
         signing::verify_data(pubkey.as_ref(), self.hash().as_ref(), &self.seal.as_ref())
     }
 
@@ -59,5 +60,13 @@ mod tests {
         let keypair = signing::load_key("keys.bin".to_string()).unwrap();
         let block = MsgBlock::new("Hello World!".to_string(), &keypair);
         assert_eq!(format!("{:?}", &block), "MsgBlock { msg: \"Hello World!\" }");
+    }
+
+    #[test]
+    fn msgblock_checking_test() {
+        let keypair = signing::load_key("keys.bin".to_string()).unwrap();
+        let block = MsgBlock::new("Hello World!".to_string(), &keypair);
+
+        assert_eq!(block.is_valid(keypair.public_key().as_ref()), true);
     }
 }
