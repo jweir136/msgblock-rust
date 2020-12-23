@@ -23,3 +23,13 @@ impl Miner {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn miner_new_test() {
+        Miner::new("localhost:8000".to_string());
+    }
+}
