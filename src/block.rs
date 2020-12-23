@@ -5,13 +5,13 @@ use std::fmt::{ Debug, Result, Formatter };
 pub trait BlockTrait {
     fn is_valid(&self, pubkey: &PublicKey) -> bool;
     fn hash(&self) -> Hash;
-    fn as_json(&self) -> &str;
+    fn as_json(&self) -> String;
     //fn from_json(json: String) -> Self;
 }
 
 pub struct MsgBlock {
     msg: String,
-    seal: Seal
+    pub seal: Seal
 }
 
 impl BlockTrait for MsgBlock {
@@ -23,8 +23,8 @@ impl BlockTrait for MsgBlock {
         hashing::sha256_hash(format!("{}", &self.msg).as_bytes())
     }
 
-    fn as_json(&self) -> &str {
-        ""
+    fn as_json(&self) -> String {
+        "".to_string()
     }
 }
 
@@ -53,6 +53,6 @@ mod tests {
     fn msgblock_new_test() {
         let keypair = signing::load_key("keys.bin".to_string()).unwrap();
         let block = MsgBlock::new("Hello World!".to_string(), &keypair);
-        assert_eq!(format!("{:?}", block), "MsgBlock { msg: \"Hello World!\" }");
+        assert_eq!(format!("{:?}", &block), "MsgBlock { msg: \"Hello World!\" }");
     }
 }
