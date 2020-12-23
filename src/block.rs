@@ -1,7 +1,9 @@
 use crate::types::{Hash, Seal};
 use block_cryptography_rust::{ hashing, signing };
 use std::fmt::{ Debug, Result, Formatter };
+#[allow(unused_imports)]
 use ring::signature::KeyPair;
+use serde::{ Serialize };
 
 pub trait BlockTrait {
     fn is_valid(&self, pubkey: &[u8]) -> bool;
@@ -10,6 +12,7 @@ pub trait BlockTrait {
     //fn from_json(json: String) -> Self;
 }
 
+#[derive(Serialize)]
 pub struct MsgBlock {
     msg: String,
     pub seal: Seal
@@ -32,10 +35,10 @@ impl BlockTrait for MsgBlock {
 impl MsgBlock {
     pub fn new(msg: String, pubkey: &signing::RSAKeyPair) -> Self {
         let seal = signing::sign_data(pubkey, hashing::sha256_hash(&msg.as_bytes()).as_ref());
-        let mut sealbuff: [u8; 64] = [0; 64];
+        let mut sealbuff = Vec::<u8>::new();
         
         for i in 0..seal.as_ref().len() {
-            sealbuff[i] = seal.as_ref()[i];
+            sealbuff.push(seal.as_ref()[i]);
         }
 
         MsgBlock {
