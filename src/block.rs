@@ -31,10 +31,15 @@ impl BlockTrait for MsgBlock {
 impl MsgBlock {
     pub fn new(msg: String, pubkey: &signing::RSAKeyPair) -> Self {
         let seal = signing::sign_data(pubkey, hashing::sha256_hash(&msg.as_bytes()).as_ref());
+        let mut sealbuff: [u8; 64] = [0; 64];
+        
+        for i in 0..seal.as_ref().len() {
+            sealbuff[i] = seal.as_ref()[i];
+        }
 
         MsgBlock {
             msg: msg,
-            seal: seal
+            seal: sealbuff
         }
     }
 }
