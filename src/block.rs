@@ -1,5 +1,6 @@
 use crate::types::{PublicKey, Hash, Seal};
 use block_cryptography_rust::{ hashing, signing };
+use std::fmt::{ Debug, Result, Formatter };
 
 pub trait BlockTrait {
     fn is_valid(&self, pubkey: &PublicKey) -> bool;
@@ -19,7 +20,7 @@ impl BlockTrait for MsgBlock {
     }
 
     fn hash(&self) -> Hash {
-        hashing::sha256_hash(format!("{}", self.msg).as_bytes())
+        hashing::sha256_hash(format!("{}", &self.msg).as_bytes())
     }
 
     fn as_json(&self) -> &str {
@@ -35,5 +36,23 @@ impl MsgBlock {
             msg: msg,
             seal: seal
         }
+    }
+}
+
+impl Debug for MsgBlock {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        f.debug_struct("MsgBlock").field("msg", &self.msg).finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn msgblock_new_test() {
+        let keypair = signing::load_key("keys.bin".to_string()).unwrap();
+        let block = MsgBlock::new("Hello World!".to_string(), &keypair);
+        assert_eq!(format!("{:?}", block), "MsgBlock { msg: \"Hello World!\" }");
     }
 }
