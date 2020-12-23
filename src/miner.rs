@@ -1,4 +1,4 @@
-use crate::types::{ Hash, Seal, Request, ServerError };
+use crate::types::{ Request, ServerError };
 use crate::block::{ MsgBlock, BlockTrait };
 use std::thread;
 use std::net::{ TcpListener, TcpStream };
@@ -26,7 +26,7 @@ impl Miner {
         }
     }
 
-    pub fn get_request(&mut self, stream: &mut TcpStream) -> Result<Request, ServerError> {
+    pub fn get_request(stream: &mut TcpStream) -> Result<Request, ServerError> {
         let mut buff: [u8; 1] = [0; 1];
 
         match stream.read_exact(&mut buff) {
@@ -44,7 +44,7 @@ impl Miner {
         }
     }
 
-    pub fn get_block(&mut self, stream: &mut TcpStream) -> Result<MsgBlock, ServerError> {
+    pub fn get_block(stream: &mut TcpStream) -> Result<MsgBlock, ServerError> {
         let mut json = String::new();
 
         match stream.read_to_string(&mut json) {
@@ -67,19 +67,21 @@ impl Miner {
     pub fn add_block(&mut self, stream: &mut TcpStream, block: MsgBlock) -> Result<(), ServerError> {
         if block.is_valid(&KEY[..]) {
             for peer in &self.peers {
-                match TcpStream::connect(peer) {
-                    Ok(mut substream) => {
-                        match self.send_block(&mut substream, block.as_json()) {
-                            Ok(_) => {
-                                return Ok(());
-                            },
-                            Err(_) => {
-                                return Err(ServerError::CannotWrite);
+                if *peer != self.addr {
+                    match TcpStream::connect(peer) {
+                        Ok(mut substream) => {
+                            match self.send_block(&mut substream, block.as_json()) {
+                                Ok(_) => {
+                                    return Ok(());
+                                },
+                                Err(_) => {
+                                    return Err(ServerError::CannotWrite);
+                                }
                             }
+                        },
+                        Err(_) => {
+                            return Err(ServerError::CannotConnect);
                         }
-                    },
-                    Err(_) => {
-                        return Err(ServerError::CannotConnect);
                     }
                 }
             }
@@ -90,6 +92,44 @@ impl Miner {
         }
 
         Err(ServerError::InvalidBlock)
+    }
+
+    pub fn run(&mut self) {
+        for stream in self.server.incoming() {
+            match stream {
+                Ok(mut stream) => {
+                    println!("[INFO] Client Connected");
+    
+                    match Miner::get_request(&mut stream) {
+                        Ok(request) => {
+                            println!("[INFO] Request Recieved");
+    
+                            match request {
+                                Request::AdminAdd => {
+                                    match Miner::get_block(&mut stream) {
+                                        Ok(block) => {
+                                            println!("[INFO] Retrieved Block {:?}", &block);
+                                        },
+                                        Err(_) => {
+                                            println!("[ERROR] Cannot Get Block");
+                                        }
+                                    };
+                                },
+                                _ => {
+    
+                                }
+                            };
+                        },
+                        Err(_) => {
+                            println!("[ERROR] Invalid Request");
+                        }
+                    };
+                },
+                Err(_) => {
+                    println!("[ERROR] Client Cannot Connect");
+                }
+            }   
+        }
     }
 }
 
