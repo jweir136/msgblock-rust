@@ -3,16 +3,17 @@ use block_cryptography_rust::{ hashing, signing };
 use std::fmt::{ Debug, Result, Formatter };
 #[allow(unused_imports)]
 use ring::signature::KeyPair;
-use serde::{ Serialize };
+use serde::{ Serialize, Deserialize };
+use serde_json::{ to_string, from_str };
 
 pub trait BlockTrait {
     fn is_valid(&self, pubkey: &[u8]) -> bool;
     fn hash(&self) -> Hash;
     fn as_json(&self) -> String;
-    //fn from_json(json: String) -> Self;
+    fn from_json(json: &str) -> Self;
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct MsgBlock {
     msg: String,
     pub seal: Seal
@@ -28,7 +29,12 @@ impl BlockTrait for MsgBlock {
     }
 
     fn as_json(&self) -> String {
-        "".to_string()
+        to_string(&self).unwrap()
+    }
+
+    fn from_json(json: &str) -> Self {
+        let block: MsgBlock = from_str(json).unwrap();
+        block
     }
 }
 
