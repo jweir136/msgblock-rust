@@ -7,3 +7,5 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+block_cryptography_rust = { git = "https://github.com/jweir136/block_cryptography_rust.git" }
+ring = "0.17.0-alpha.4"
