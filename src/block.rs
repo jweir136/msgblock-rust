@@ -78,4 +78,15 @@ mod tests {
 
         assert_eq!(block.is_valid(keypair.public_key().as_ref()), true);
     }
+
+    #[test]
+    fn msgblock_json_test() {
+        let keypair = signing::load_key("keys.bin".to_string()).unwrap();
+        let block = MsgBlock::new("Hello World!".to_string(), &keypair);
+
+        let json = &block.as_json();
+        let newblock = MsgBlock::from_json(&json[..]);
+
+        assert_eq!(format!("{:?}", block), format!("{:?}", newblock));
+    }
 }
