@@ -131,7 +131,34 @@ impl Miner {
                                             println!("[ERROR] Cannot get Block");
                                         }
                                     };
-                                }
+                                },
+                                Request::Get => {
+                                    println!("[INFO] Requested Block");
+                                    let mut buff = [0 as u8; 1];
+                                    match stream.read_exact(&mut buff) {
+                                        Ok(_) => {
+                                            println!("[INFO] Requested Element {}", &buff[0]);
+                                            match &self.blocks.get(buff[0] as usize) {
+                                                Some(block) => {
+                                                    match self.send_block(&mut stream, block.as_json()) {
+                                                        Ok(_) => {
+                                                            println!("[INFO] Block Sent");
+                                                        },
+                                                        Err(_) => {
+                                                            println!("[ERROR] Block could not be sent");
+                                                        }
+                                                    };       
+                                                },
+                                                None => {
+                                                    println!("[ERROR] Block not found. Perhaps it must propigate to the network");
+                                                }
+                                            }
+                                        },
+                                        Err(_) => {
+                                            println!("[ERROR] Cannot get ID");      
+                                        }
+                                    };
+                                },
                                 _ => {
     
                                 }

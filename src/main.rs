@@ -19,5 +19,15 @@ fn main() {
 
         let string = block::MsgBlock::new("Hello".to_string(), &keys).as_json();
         stream.write_all(string.as_bytes()).unwrap();
+
+        drop(stream);
+
+        let mut stream = TcpStream::connect("localhost:8000").unwrap();
+        stream.write_all(&[3 as u8][..]).unwrap();
+        stream.write_all(&[0 as u8][..]).unwrap();
+
+        let mut buff = String::new();
+        stream.read_to_string(&mut buff).unwrap();
+        println!("{}", buff);
     }
 }
