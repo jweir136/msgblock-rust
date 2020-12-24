@@ -11,8 +11,8 @@ fn main() {
     let keys = signing::load_key("keys.bin".to_string()).unwrap();
 
     if args[1] == "miner" {
-        let mut m = miner::Miner::new("localhost:8000".to_string());
-        m.run();
+        let mut m = miner::Miner::new();
+        m.run(args[2].to_string());
     } else {
         let mut stream = TcpStream::connect("localhost:8000").unwrap();
         stream.write_all(&[2 as u8][..]).unwrap();
